@@ -6,13 +6,21 @@
 
     Nmap needs to be run first to generate the source data.  There are many ways to do this but one such option is: nmap -sS -O -F -oX nmapData.xml <network>/<mask>
 .PARAMETER Path
-    The name of the Nmap XML data file        
+    The name of the Nmap XML data file
+.PARAMETER ExcludePrinter
+    Use this switch to exclude the analysis of hosts running more than one of the common printing protocols (e.g., LPD, IPP, Jetdirect)
 .NOTES
     Version 1.0
     Sam Pursglove
-    Last modified: 19 JUL 2018
+    Last modified: 25 JUL 2018
 .EXAMPLE
     Analyze-NmapCommonPorts.ps1 nmapData.xml
+
+    Runs the script with only the XML data as input
+.EXAMPLE
+    Analyze-NmapCommonPorts.ps1 -Path nmapData.xml -ExcludePrinters
+
+    Runs the script with XML data as input and skips the analysis of hosts running more than one of the common printing protocols
 #>
 
 Param (
@@ -20,7 +28,12 @@ Param (
                Mandatory=$True,
                ValueFromPipeline=$True,
                HelpMessage='The name of the Nmap XML data file')]
-    [String]$Path
+    [String]$Path,
+    
+    [Parameter(Mandatory=$False,
+               ValueFromPipeline=$False,
+               HelpMessage='Remove the analysis of common printing protocol ports')]
+    [Switch]$ExcludePrinters
 )
 
 $parsed = .\Parse-Nmap.ps1 $Path
@@ -63,18 +76,17 @@ function SearchFor-Printer {
 # identify listening ports of some common protocols
 $individualPorts = @($ftp, $ssh, $telnet, $smtp, $dns, $http, $https)
 
-ForEach ($port in $IndividualPorts) {
-    [regex]$extractPort = "(?<currentPort>\d+)"
-    $currentPort = $extractPort.match($port).Groups["currentPort"].Value
+ForEach ($port in $individualPorts) {
+    $currentPort = [regex]::Match($port, "\d{1,5}").Value
      
-    $portMatches = SearchFor-Port $port  
-    Write-Output "Port $currentPort is open on the following $($portMatches.length) IPs"
-    $portMatches | Format-Wide IPv4 -AutoSize   
+    $portIpMatches = SearchFor-Port $port  
+    Write-Output "Port $currentPort is open on the following $($portIpMatches.length) IPs"
+    $portIpMatches | Format-Wide IPv4 -AutoSize   
 }
 
 # find printers
-if (!$ExcludePrintersScanners) {
-    $printerMatches = SearchFor-Printer
-    Write-Output "These $($printerMatches.length) IPs are listening on at least one common printer port"
-    $printerMatches | Format-Wide IPv4 -AutoSize
+if (!$ExcludePrinters) {
+    $printerIpMatches = SearchFor-Printer
+    Write-Output "These $($printerIpMatches.length) IPs are listening on at least one common printer port (e.g., 515, 631, 9100)"
+    $printerIpMatches | Format-Wide IPv4 -AutoSize
 }

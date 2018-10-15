@@ -51,4 +51,6 @@ I’d personally pay attention to any unknown services that are only running on 
 
 #### For a complete listing of help directly within Powershell run:
 
-    Get-Help .\Analyze-NmapCommonPorts.ps1 -Full
+```console
+Get-Help .\Analyze-NmapCommonPorts.ps1 -Full
+```

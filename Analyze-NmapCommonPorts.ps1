@@ -4,7 +4,7 @@
 
     When the output is grouped by host IP it displays common open ports for each given host.
 
-    An options exists to produce a total count of open ports for each unique TCP or UDP port. There is another option that converts the XML data to the TSV format.
+    An option exists to produce a total count of open ports for each unique TCP or UDP port. There is another option that converts the XML data to the TSV format.
 .DESCRIPTION
     This script displays a summary of IP addresses for common TCP or UDP ports that are open as well as hosts that report having open ports for protocols commmon to printing.  The list of common ports that are checked are: ftp (21, tcp), ssh (22, tcp), telnet (23, tcp), smtp (25, tcp), dns (53, tcp/udp), http (80, tcp), ntp (123, udp), smtp (161, udp), smtp traps (162, udp), https (443, tcp), and UPnP ports (1900, tcp/udp; 5000, tcp).  The list of common printing protocol ports that are checked are: lpd (515, tcp), ipp (631, tcp), and jetdirect (9100, tcp).
 

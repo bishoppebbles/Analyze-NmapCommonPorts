@@ -3,12 +3,16 @@
     When the output is grouped by port it displays IP addresses of systems with common open ports based on Nmap's XML formatted output.  It also displays systems that have more than one port open for protocols common to printing.
 
     When the output is grouped by host IP it displays common open ports for each given host.
+
+    An options exists to produce a total count of open ports for each unique TCP or UDP port. There is another option that converts the XML data to the TSV format.
 .DESCRIPTION
     This script displays a summary of IP addresses for common TCP or UDP ports that are open as well as hosts that report having open ports for protocols commmon to printing.  The list of common ports that are checked are: ftp (21, tcp), ssh (22, tcp), telnet (23, tcp), smtp (25, tcp), dns (53, tcp/udp), http (80, tcp), ntp (123, udp), smtp (161, udp), smtp traps (162, udp), https (443, tcp), and UPnP ports (1900, tcp/udp; 5000, tcp).  The list of common printing protocol ports that are checked are: lpd (515, tcp), ipp (631, tcp), and jetdirect (9100, tcp).
 
     An option is available to return the Fully Qualified Domain Name (FQDN), if it exists, of the host as well.  Another option exists that displays the output of common open ports grouped by host IP.
 
-    Nmap needs to be run first to generate the source data.  There are many ways to do this but one such option running SYN and UDP scans for the 100 most common ports is: nmap -sSU -F -oX nmapData.xml <network>/<mask>
+    The last option converts the XML data to the Tab Separated Value (TSV) format to aid in further analysis using spreadsheet software.  A unique entry will exist for every port regardless of its status.  Matt Johnson provided contributions to this code.
+
+    Nmap needs to be run first to generate the source data.  There are many ways to do this but one such option running SYN and UDP scans for the 100 most common ports is: nmap -sS -sU -F -oX nmapData.xml <network>/<mask>
 .PARAMETER NmapXml
     The name of the Nmap XML data file
 .PARAMETER ExcludePrinter
@@ -19,6 +23,13 @@
     Displays the output of open ports grouped by IP/Host.
 .PARAMETER CountOpenPorts
     Displays the output of open ports grouped by IP/Host.
+.PARAMETER CreateTsv
+    Converts the XML data to a TSV format for use in spreadsheet software.  There is a unique entry for every port regardless of its status.
+.PARAMETER ExcludeFields
+    List of fields to exclude from the TSV output file. The default option removes: Status, IPv6, MAC, Services, OS, Script. To include all fields use the <-ExcludedOutput ''> option.
+    Valid options include: FQDN, Status, IPv4, IPv6, MAC, Services, OS, Script, PortStatus, Transport, Port, PortService
+.PARAMETER OutputFile
+    Name of the converted Nmap TSV output file. Will default to NmapData.tsv if no value is given.
 .EXAMPLE
     Analyze-NmapCommonPorts.ps1 -NmapXml nmapData.xml
 
@@ -35,11 +46,24 @@
     Analyze-NmapCommonPorts.ps1 -NmapXml nmapData.xml -SortByHost
 
     Runs the script with XML data as input and displays each host with a list of any common open ports.
+.EXAMPLE
+    Analyze-NmapCommonPorts.ps1 -NmapXml nmapData.xml -CreateTsv -OutputFile PortScanData.tsv
+
+    Will convert the Nmap XML data file into a TSV formatted file named <PortScanData.tsv>
+.EXAMPLE
+    Analyze-NmapCommonPorts.ps1 -NmapXml nmapData.xml -CreateTsv -ExcludedOutput IPv6, MAC
+
+    Filters the IPv6 and the MAC address fields from the TSV output file, NmapData.tsv.
+.EXAMPLE
+    Analyze-NmapCommonPorts.ps1 -NmapXml nmapData.xml -CreateTsv -ExcludedOutput ''
+    
+    Filters no fields and outputs all data to the TSV output file, NmapData.tsv.
 .NOTES
     This script uses the Parse-Nmap.ps1 cmdlet written by @JasonFossen of Enclave Consulting to parse Nmap's XML output file.  That script, among others, is available to download from <https://github.com/EnclaveConsulting/SANS-SEC505>.
     
-    Version 1.0
+    Version 1.1.1
     Sam Pursglove
+    Matt Johnson - Export to CSV contributions
     Last modified: 19 OCT 2018
 #>
 
@@ -63,7 +87,19 @@ param (
 
     [Parameter(ParameterSetName='OpenPortCount', Mandatory=$True, ValueFromPipeline=$False, HelpMessage='Counts the total number of open ports')]
     [Switch]
-    $CountOpenPorts
+    $CountOpenPorts,
+
+    [Parameter(ParameterSetName='CreateTsv', Mandatory=$True, ValueFromPipeline=$False, HelpMessage='Creates a TSV file from the XML data')]
+    [Switch]
+    $CreateTsv,
+
+    [Parameter(ParameterSetName='CreateTsv', Mandatory=$False, ValueFromPipeline=$False, HelpMessage='Nmap fields to removed from the output (default fields: Status, IPv6, MAC, Services, OS, Script)')]
+    [String[]]
+    $ExcludeFields = @('Status','IPv6','MAC','Services','OS','Script'),
+
+    [Parameter(ParameterSetName='CreateTsv', Mandatory=$False, ValueFromPipeline=$False, HelpMessage='Name of the output TSV file (default: NmapData.tsv)')]
+    [String]
+    $OutputFile = 'NmapData.tsv'
 )
 
 # many of these variables are not used by default but are here for reference should they be needed
@@ -231,6 +267,45 @@ if ($SortByHost) {
             }
         
     $PortTracker.GetEnumerator() | Sort-Object Key | Format-Table -Property @{Label="Port";Expression={$_.Name}},@{Label="Count";Expression={$_.Value}}
+
+} elseif ($CreateTsv) {
+
+    $NmapCsv = @()
+
+    foreach($entry in $Parsed) {
+                
+        $AllPorts = $($entry.Ports).Split() # split each entry to its own line
+
+        $Properties = @{Hostname=   $entry.HostName
+                        FQDN=       $entry.FQDN
+                        Status=     $entry.Status
+                        IPv4=       $entry.IPv4
+                        IPv6=       $entry.IPv6
+                        MAC=        $entry.MAC
+                        Services=   $entry.Services
+                        OS=         $entry.OS
+                        Script=     $entry.Script}
+
+        foreach($port in $AllPorts) {
+
+            $Properties.Add('PortStatus',$port.split(':')[0])
+            $Properties.Add('Transport',$port.split(':')[1])
+            $Properties.Add('Port',$port.split(':')[2])
+            $Properties.Add('PortService',$port.split(':')[3])
+        
+            # add the current port data as a new object
+            $NmapObject = New-Object -TypeName psobject -Property $Properties
+            $NmapCsv += $NmapObject
+
+            # remove these properties so they can be added for the next object
+            $Properties.Remove('PortStatus')
+            $Properties.Remove('Transport')
+            $Properties.Remove('Port')
+            $Properties.Remove('PortService')
+        }
+    }
+
+    $NmapCsv | Select-Object -Property * -ExcludeProperty $ExcludeFields | Export-Csv -Delimiter `t -Path $OutputFile -NoTypeInformation
 
 } else {
 

@@ -19,12 +19,6 @@
     Displays the output of open ports grouped by IP/Host.
 .PARAMETER CountOpenPorts
     Displays the output of open ports grouped by IP/Host.
-.NOTES
-    This script uses the Parse-Nmap.ps1 cmdlet written by @JasonFossen of Enclave Consulting to parse Nmap's XML output file.  That script, among others, is available to download from <https://github.com/EnclaveConsulting/SANS-SEC505>.
-    
-    Version 1.0
-    Sam Pursglove
-    Last modified: 18 OCT 2018
 .EXAMPLE
     Analyze-NmapCommonPorts.ps1 -NmapXml nmapData.xml
 
@@ -41,6 +35,12 @@
     Analyze-NmapCommonPorts.ps1 -NmapXml nmapData.xml -SortByHost
 
     Runs the script with XML data as input and displays each host with a list of any common open ports.
+.NOTES
+    This script uses the Parse-Nmap.ps1 cmdlet written by @JasonFossen of Enclave Consulting to parse Nmap's XML output file.  That script, among others, is available to download from <https://github.com/EnclaveConsulting/SANS-SEC505>.
+    
+    Version 1.0
+    Sam Pursglove
+    Last modified: 19 OCT 2018
 #>
 
 [CmdletBinding(DefaultParameterSetName='GroupByPort')]

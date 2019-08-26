@@ -61,10 +61,10 @@
 .NOTES
     This script uses the Parse-Nmap.ps1 cmdlet written by @JasonFossen of Enclave Consulting to parse Nmap's XML output file.  That script, among others, is available to download from <https://github.com/EnclaveConsulting/SANS-SEC505>.
     
-    Version 1.1.1
+    Version 1.1.2
     Sam Pursglove
     Matt Johnson - Export to CSV contributions
-    Last modified: 19 OCT 2018
+    Last modified: 26 AUG 2019
 #>
 
 [CmdletBinding(DefaultParameterSetName='GroupByPort')]
@@ -110,6 +110,7 @@ $smtp          = 'open:tcp:25:smtp'
 $dns_t         = 'open:tcp:53:domain'
 $dns_u         = 'open:udp:53:domain'
 $tftp_u        = 'open:udp:69:tftp'
+$finger        = 'open:tcp:79:finger'
 $http          = 'open:tcp:80:http'
 $kerberos      = 'open:tcp:88:kerberos-sec'
 $rpcbind_t     = 'open:tcp:111:rpcbind'
@@ -205,10 +206,10 @@ $Parsed = & $PSScriptRoot\Parse-Nmap.ps1 -Path $NmapXml
 # identify listening ports of some common protocols
 
 # modify this variable to add/remove ports for output groups sorted by port number
-$IndividualPorts = @($ftp, $ssh, $telnet, $smtp, $dns_t, $dns_u, $tftp_u, $http, $ntp_u, $snmp_u, $snmp_trap_u, $https, $upnp1900_t, $upnp1900_u, $upnp5000)
+$IndividualPorts = @($ftp, $ssh, $telnet, $smtp, $dns_t, $dns_u, $tftp_u, $finger, $http, $ntp_u, $snmp_u, $snmp_trap_u, $https, $upnp1900_t, $upnp1900_u, $upnp5000)
 
 # modify this variable to add/remove ports for output groups sorted by host
-$IndividualPortsPlusPrinters = @($ftp, $ssh, $telnet, $smtp, $dns_t, $dns_u, $tftp_u, $http, $ntp_u, $snmp_u, $snmp_trap_u, $https, $upnp1900_t, $upnp1900_u, $upnp5000, $lpd, $ipp, $jetdirect)
+$IndividualPortsPlusPrinters = @($ftp, $ssh, $telnet, $smtp, $dns_t, $dns_u, $tftp_u, $finger, $http, $ntp_u, $snmp_u, $snmp_trap_u, $https, $upnp1900_t, $upnp1900_u, $upnp5000, $lpd, $ipp, $jetdirect)
 
 
 if ($SortByHost) {

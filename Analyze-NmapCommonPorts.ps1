@@ -61,10 +61,10 @@
 .NOTES
     This script uses the Parse-Nmap.ps1 cmdlet written by @JasonFossen of Enclave Consulting to parse Nmap's XML output file.  That script, among others, is available to download from <https://github.com/EnclaveConsulting/SANS-SEC505>.
     
-    Version 1.1.2
+    Version 1.1.3
     Sam Pursglove
     Matt Johnson - Export to CSV contributions
-    Last modified: 26 AUG 2019
+    Last modified: 10 AUG 2023
 #>
 
 [CmdletBinding(DefaultParameterSetName='GroupByPort')]

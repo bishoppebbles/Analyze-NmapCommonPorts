@@ -176,7 +176,7 @@ function SearchFor-PortByHost {
 # checks for hosts that have more than one common printer port open
 function SearchFor-PrinterPorts {
 
-    $Parsed | Where-Object { ($_.Ports -split '\n' -match "$lpd|$ipp|$jetdirect").count -ge 1 }
+    $Parsed | Where-Object { ($_.Ports -split '\n' -match "$lpd|$ipp|$jetdirect").count -gt 1 }
 }
 
 

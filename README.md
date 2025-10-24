@@ -5,7 +5,7 @@ Other features include:
 * An option to produce a total count of open ports for each unique TCP or UDP port
 * An option that converts the XML data to the Tab Separated Value (TSV) format
 
-This script calls the [Parse-Nmap.ps1](https://github.com/EnclaveConsulting/SANS-SEC505) cmdlet by @JasonFossen of Enclave Consulting to parse Nmap's XML output file.  His cmdlet nicely creates PowerShell objects to work with.  This also requires XML formatted Nmap output.
+This script calls the [Parse-Nmap.ps1](https://github.com/EnclaveConsulting/SANS-SEC505) function by @JasonFossen of Enclave Consulting to parse Nmap's XML output file.  His cmdlet nicely creates PowerShell objects to work with.  This also requires XML formatted Nmap output.
 
 The XML to TSV converter has contributions from Matt Johnson.
 

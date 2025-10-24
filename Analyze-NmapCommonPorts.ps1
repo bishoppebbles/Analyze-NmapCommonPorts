@@ -61,7 +61,7 @@
 .NOTES
     This script uses the Parse-Nmap.ps1 cmdlet written by @JasonFossen of Enclave Consulting to parse Nmap's XML output file.  That script, among others, is available to download from <https://github.com/EnclaveConsulting/SANS-SEC505>.
     
-    Version 1.1.4
+    Version 1.1.5
     Sam Pursglove
     Matt Johnson - Export to CSV contributions
     Last modified: 24 OCT 2025
@@ -466,7 +466,6 @@ function parse-nmap
 }
 
 
-#$Parsed = & $PSScriptRoot\Parse-Nmap.ps1 -Path $NmapXml
 $Parsed = parse-nmap -Path $NmapXml
 
 # identify listening ports of some common protocols
@@ -631,4 +630,5 @@ if ($SortByHost) {
             $PrinterIpMatches | Format-Wide IPv4 -AutoSize
         }
     }
+
 }
